@@ -215,6 +215,75 @@ class SSPSpi extends SSPClient {
       };
     }
   }
-}
 
+  /**
+   * Create a folder on the remote server using WebDAV MKCOL
+   * @param {string} remotePath - Remote path on server (e.g., /Documents/NewFolder)
+   * @param {Object} options - Options
+   * @param {boolean} options.recursive - Create parent directories recursively (-p flag)
+   * @returns {Promise<Object>} Result object with status and data
+   */
+  async createFolder(remotePath, options = {}) {
+    const { recursive = false } = options;
+    
+    // Ensure remotePath starts with /
+    const normalizedRemotePath = remotePath.startsWith('/') ? remotePath : `/${remotePath}`;
+    
+    // WebDAV MKCOL endpoint
+    const url = `/remote.php/webdav${normalizedRemotePath}`;
+    
+    const mkcolRequest = async (path) => {
+      try {
+        await this.client.request({
+          method: 'MKCOL',
+          url: `/remote.php/webdav${path}`,
+          headers: {
+            'requesttoken': this.requesttoken,
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          validateStatus: (status) => status < 500
+        });
+        return { status: 'success' };
+      } catch (err) {
+        // Check for specific error status
+        if (err.response) {
+          const status = err.response.status;
+          if (status === 405) {
+            return { status: 'error', data: { message: `錯誤: 資料夾已存在 - ${normalizedRemotePath}` } };
+          }
+          if (status === 409) {
+            return { status: 'error', data: { message: `錯誤: 父目錄不存在` } };
+          }
+          if (status === 403) {
+            return { status: 'error', data: { message: `錯誤: 權限不足` } };
+          }
+        }
+        return {
+          status: 'error',
+          data: { message: err.response?.data || err.message }
+        };
+      }
+    };
+
+    if (recursive) {
+      // Parse path segments and create parent directories recursively
+      const pathSegments = normalizedRemotePath.split('/').filter(s => s.length > 0);
+      let currentPath = '';
+      
+      for (const segment of pathSegments) {
+        currentPath += `/${segment}`;
+        // Try to create each level, ignore "already exists" errors
+        const result = await mkcolRequest(currentPath);
+        if (result.status === 'error' && !result.data.message.includes('已存在')) {
+          return result;
+        }
+      }
+      return { status: 'success', data: { path: normalizedRemotePath } };
+    } else {
+      // Single directory creation
+      return await mkcolRequest(normalizedRemotePath);
+    }
+  }
+
+}
 module.exports = SSPSpi;

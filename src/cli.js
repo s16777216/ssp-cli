@@ -16,6 +16,7 @@ const lsCmd = require("./commands/ls");
 const rmCmd = require("./commands/rm");
 const uploadCmd = require("./commands/upload");
 const downloadCmd = require("./commands/download");
+const mkdirCmd = require("./commands/mkdir");
 
 // Register commands
 loginCmd(program);
@@ -23,5 +24,6 @@ lsCmd(program);
 rmCmd(program);
 uploadCmd(program);
 downloadCmd(program);
+mkdirCmd(program);
 
 program.parse();
