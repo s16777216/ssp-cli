@@ -15,11 +15,13 @@ const loginCmd = require("./commands/login");
 const lsCmd = require("./commands/ls");
 const rmCmd = require("./commands/rm");
 const uploadCmd = require("./commands/upload");
+const downloadCmd = require("./commands/download");
 
 // Register commands
 loginCmd(program);
 lsCmd(program);
 rmCmd(program);
 uploadCmd(program);
+downloadCmd(program);
 
 program.parse();

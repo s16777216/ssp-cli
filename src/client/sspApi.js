@@ -123,6 +123,98 @@ class SSPSpi extends SSPClient {
       };
     }
   }
+
+  /**
+   * Download a file from the remote server using WebDAV GET
+   * @param {string} remotePath - Remote path on server (e.g., /Documents/file.txt)
+   * @param {string} localPath - Local file path to save to
+   * @param {Function} [progressCallback] - Optional callback for progress updates
+   * @returns {Promise<Object>} Result object with status and data
+   */
+  async downloadFile(remotePath, localPath, progressCallback) {
+    // Ensure remotePath starts with /
+    const normalizedRemotePath = remotePath.startsWith('/') ? remotePath : `/${remotePath}`;
+    
+    // WebDAV GET endpoint
+    const url = `/remote.php/webdav${normalizedRemotePath}`;
+    
+    let lastProgress = -1;
+    const progressInterval = 5; // Update every 5%
+    const startTime = Date.now();
+    
+    try {
+      const response = await this.client.request({
+        method: 'GET',
+        url: url,
+        responseType: 'stream',
+        headers: {
+          'requesttoken': this.requesttoken,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        onDownloadProgress: (progressEvent) => {
+          if (progressCallback && progressEvent.total) {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            // Only call callback every 5% or at 100%
+            if (percent === 100 || percent - lastProgress >= progressInterval) {
+              lastProgress = percent;
+              const loadedMB = (progressEvent.loaded / 1024 / 1024).toFixed(1);
+              const totalMB = (progressEvent.total / 1024 / 1024).toFixed(1);
+              const elapsed = (Date.now() - startTime) / 1000;
+              const speedMBps = elapsed > 0 ? (progressEvent.loaded / 1024 / 1024 / elapsed).toFixed(1) : '0.0';
+              progressCallback({
+                percent,
+                loaded: `${loadedMB} MB`,
+                total: `${totalMB} MB`,
+                speed: `${speedMBps} MB/s`
+              });
+            }
+          }
+        },
+        validateStatus: (status) => status < 500 // Don't throw on 4xx, handle manually
+      });
+      
+      // Check for HTTP error status
+      if (response.status >= 400) {
+        let errorMsg = `HTTP ${response.status}`;
+        if (response.data) {
+          // Try to read error response body
+          const chunks = [];
+          for await (const chunk of response.data) {
+            chunks.push(chunk);
+          }
+          const errorBody = Buffer.concat(chunks).toString('utf8');
+          try {
+            const errorJson = JSON.parse(errorBody);
+            errorMsg = errorJson.message || errorJson.error || errorBody;
+          } catch (e) {
+            errorMsg = errorBody || `HTTP ${response.status}`;
+          }
+        }
+        return {
+          status: 'error',
+          data: { message: errorMsg }
+        };
+      }
+      
+      // Save stream to file
+      const writer = fs.createWriteStream(localPath);
+      response.data.pipe(writer);
+      
+      return new Promise((resolve, reject) => {
+        writer.on('finish', () => {
+          resolve({ status: 'success', data: { path: localPath } });
+        });
+        writer.on('error', (err) => {
+          reject({ status: 'error', data: { message: err.message } });
+        });
+      });
+    } catch (err) {
+      return {
+        status: 'error',
+        data: { message: err.response?.data || err.message }
+      };
+    }
+  }
 }
 
 module.exports = SSPSpi;
