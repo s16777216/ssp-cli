@@ -1,5 +1,5 @@
 {
-  "name": "ssp-cli",
+  "name": "@s16777216/ssp-cli",
   "version": "0.1.0",
   "description": "Node.js CLI tool for Mailcloud (SecuSharePro) file storage - login, list, upload, download, delete, mkdir, move, copy, search, logout",
   "main": "src/cli.js",
@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node src/cli.js",
-    "test": "node src/test.js",
+    "test": "node --test",
     "prepublishOnly": "npm test"
   },
   "keywords": [
@@ -20,16 +20,16 @@
     "file-storage",
     "cli"
   ],
-  "author": "leo.chang@rpwis.com",
+  "author": "l1597532@gmail.com",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/ssp-reverse.git"
+    "url": "https://github.com/s16777216/ssp-cli.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/ssp-reverse/issues"
+    "url": "https://github.com/s16777216/ssp-cli/issues"
   },
-  "homepage": "https://github.com/your-username/ssp-reverse#readme",
+  "homepage": "https://github.com/s16777216/ssp-cli#readme",
   "files": [
     "src/",
     "README.md",

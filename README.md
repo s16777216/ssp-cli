@@ -7,10 +7,10 @@ Node.js CLI 工具，用於操作 Mailcloud (SecuSharePro) 雲端檔案儲存系
 ## 安裝
 
 ```bash
-# 全局安裝
-npm install -g .
+# 全局安裝（從 npm registry）
+npm install -g @s16777216/ssp-cli
 
-# 或本地使用
+# 或本地使用（不經安裝）
 node src/cli.js <command>
 ```
 

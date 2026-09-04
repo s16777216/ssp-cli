@@ -8,7 +8,7 @@ const program = new Command();
 program
   .name("ssp")
   .description("CLI tool for Mailcloud SecuSharePro / ownCloud")
-  .version("1.0.0");
+  .version(require("../package.json").version);
 
 // Load command modules
 const loginCmd = require("./commands/login");
