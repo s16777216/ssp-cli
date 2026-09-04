@@ -9,20 +9,20 @@ The system SHALL allow users to move or rename a file or folder on Mailcloud ser
 - **WHEN** user executes `ssp mv <src> <dst>`
 - **THEN** system moves/renames the file/folder from `<src>` to `<dst>`
 
-#### Scenario: Move into directory
+#### Scenario: Move destination is treated as exact target path
 
-- **WHEN** user executes `ssp mv <src> <dst-dir>/` where `<dst-dir>` is an existing directory
-- **THEN** system moves the source into `<dst-dir>` preserving the original filename
+- **WHEN** user executes `ssp mv <src> <dst>`
+- **THEN** system moves the source to the exact path `<dst>`, without auto-inserting into a directory even if `<dst>` is an existing directory
 
-#### Scenario: Target already exists (default)
+#### Scenario: Target already exists (default interactive)
 
-- **WHEN** target `<dst>` already exists
-- **THEN** system displays error `錯誤: 目標已存在 - <dst>` and exits with non-zero code
+- **WHEN** target `<dst>` already exists and user executes `ssp mv <src> <dst>`
+- **THEN** system prompts `目標已存在，覆蓋？ [y/N]`, proceeds only on `y` (re-issues MOVE with `Overwrite: T`)
 
-#### Scenario: Target already exists with -i flag
+#### Scenario: Target already exists with -y flag
 
-- **WHEN** user executes `ssp mv -i <src> <dst>` and target exists
-- **THEN** system prompts `目標已存在，覆蓋？ [y/N]`, proceeds only on `y`
+- **WHEN** user executes `ssp mv -y <src> <dst>` and target exists
+- **THEN** system automatically overwrites the target without prompting (re-issues MOVE with `Overwrite: T`)
 
 #### Scenario: Source not found
 

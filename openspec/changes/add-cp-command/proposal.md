@@ -5,10 +5,10 @@
 ## What Changes
 
 - 新增 `cp` 指令，支援複製遠端檔案/資料夾
-- 使用 WebDAV COPY 協定
-- 預設不遞迴複製資料夾（符合 Unix cp 行為），支援 `-r` / `--recursive` 遞迴複製
-- 支援 `-i` / `--interactive` 旗標：目標存在時互動確認
-- 目標路徑為目錄時，自動複製入該目錄（保留原檔名）
+- 使用 WebDAV COPY 協定（不送 `Depth` header，靠 RFC 4918「無 header 視同 infinity」達成資料夾遞迴）
+- 資料夾複製須帶 `-r` / `--recursive`，否則報錯 `錯誤: 來源為資料夾，請使用 -r`
+- 目標已存在時預設 readline 互動確認（`覆蓋？ [y/N]`）；`-y` / `--yes` 自動覆蓋/跳過確認
+- 目標路徑一律當作目標完整路徑直寫，不自動移入目錄
 
 ## Capabilities
 
@@ -23,6 +23,6 @@
 ## Impact
 
 - 新增 `src/commands/cp.js` 指令模組
-- 需擴充 `sspApi.js` 新增 `copyFile()` 方法
+- 需擴充 `sspApi.js` 新增 `copyFile()` 與 `statPath()` 方法（後者以 PROPFIND Depth:0 判斷來源為檔案/資料夾）
 - 依賴 WebDAV 端點：`COPY /remote.php/webdav/{src}` + `Destination` header
 - 無新增相依套件

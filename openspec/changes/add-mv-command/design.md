@@ -14,8 +14,8 @@ node-ssp-cli 目前支援 login、ls、rm、upload、download、mkdir 指令。�
 
 - 新增 `ssp mv <src> <dst>` 指令
 - 使用 WebDAV MOVE 協定
-- 支援 `-i` / `--interactive` 旗標：目標存在時互動確認
-- 目標為目錄時，自動移入該目錄（保留原檔名）
+- 目標已存在時預設 readline 互動確認；`-y` 自動覆蓋/跳過確認
+- 目標路徑一律當作目標完整路徑直寫，不自動移入目錄
 
 **Non-Goals:**
 
@@ -42,15 +42,14 @@ Headers: requesttoken, X-Requested-With, Overwrite: F
 ### D2: 指令格式
 
 ```bash
-ssp mv <src> <dst>
-ssp mv -i <src> <dst>
+ssp mv <src> <dst>        # 移動/重命名
+ssp mv -y <src> <dst>     # 目標已存在時自動覆蓋（跳過確認）
 ```
 
 範例：
 ```bash
 ssp mv /Documents/old.txt /Documents/new.txt      # 重命名
-ssp mv /Documents/file.txt /Archive/              # 移動到目錄
-ssp mv -i /src.txt /dst.txt                       # 互動確認
+ssp mv -y /src.txt /dst.txt                       # 自動覆蓋
 ```
 
 **選擇理由：** 符合 Unix `mv` 命令慣例。
@@ -59,15 +58,16 @@ ssp mv -i /src.txt /dst.txt                       # 互動確認
 
 | 模式 | 行為 |
 |------|------|
-| 預設 | 報錯 `錯誤: 目標已存在 - <dst>`，結束碼 1 |
-| `-i` / `--interactive` | 詢問 `目標已存在，覆蓋？ [y/N]`，輸入 `y` 才覆蓋 |
+| 預設 | readline 互動提示 `目標已存在，覆蓋？ [y/N]`，輸入 `y` 才覆蓋（重發 MOVE + `Overwrite: T`） |
+| `-y` / `--yes` | 目標已存在時自動覆蓋，不提示 |
 
-**選擇理由：** 符合 Unix `mv -i` 行為，安全預設值。
+預設即互動（與 `rm` 一致），因此**不提供 `-i` 旗標**——它在新模型下是冗餘的。
 
-### D4: 目標為目錄時的行為
+判斷目標已存在：發送 MOVE（`Overwrite: F`），接收 `412 Precondition Failed` 反推。
 
-- 當 `<dst>` 為現有目錄 → 將 `<src>` 移入該目錄，檔名保持不變
-- 當 `<dst>` 不存在且以 `/` 結尾 → 視為目錄，自動建立（類似 `mkdir -p`）
+### D4: 目標路徑解讀
+
+`<dst>` 一律當作目標完整路徑直寫（移動到該確切位置），**不自動判斷目標是否為目錄而移入**。此行為與 Unix `mv` 的 `-T` 語義一致，避免不可預期的路徑變異。
 
 ## Risks / Trade-offs
 
