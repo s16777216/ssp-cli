@@ -69,13 +69,19 @@ class SSPSpi extends SSPClient {
 
     const stats = fs.statSync(localPath);
     const fileSize = stats.size;
-    const filename = path.basename(remotePath);
-    
+
     // Ensure remotePath starts with /
     const normalizedRemotePath = remotePath.startsWith('/') ? remotePath : `/${remotePath}`;
-    
+
+    // 當目標為目錄（結尾帶 /，如 /Docs/）時，將本機檔名拼接至目錄路徑內，保留原檔名
+    // 否則維持使用者指定的完整檔案路徑
+    const isDirectoryTarget = normalizedRemotePath.endsWith('/');
+    const targetPath = isDirectoryTarget
+      ? `${normalizedRemotePath}${path.basename(localPath)}`
+      : normalizedRemotePath;
+
     // WebDAV PUT endpoint
-    const url = `/remote.php/webdav${normalizedRemotePath}`;
+    const url = `/remote.php/webdav${targetPath}`;
     
     // Read file content
     const fileContent = fs.readFileSync(localPath);
