@@ -23,27 +23,28 @@ ssp login
 
 ## 指令
 
-| 指令 | 說明 | 範例 |
-|------|------|------|
-| `login` | 登入 Mailcloud | `ssp login` |
-| `ls` | 列出檔案/目錄 | `ssp ls /Documents` |
-| `rm` | 刪除檔案/資料夾 | `ssp rm -y /old.txt` |
-| `upload` | 上傳檔案 | `ssp upload ./local.pdf /Docs/` |
-| `download` | 下載檔案 | `ssp download /Docs/file.pdf ./` |
-| `mkdir` | 建立資料夾 | `ssp mkdir -p /A/B/C` |
-| `mv` | 移動/重命名 | `ssp mv /old.txt /new.txt` |
-| `cp` | 複製檔案 | `ssp cp -r /Dir /Backup/` |
-| `logout` | 登出清除憑證 | `ssp logout` |
-| `search` | 搜尋檔案 | `ssp search report` |
+| 指令       | 說明            | 範例                             |
+| ---------- | --------------- | -------------------------------- |
+| `login`    | 登入 Mailcloud  | `ssp login`                      |
+| `ls`       | 列出檔案/目錄   | `ssp ls /Documents`              |
+| `rm`       | 刪除檔案/資料夾 | `ssp rm -y /old.txt`             |
+| `upload`   | 上傳檔案        | `ssp upload ./local.pdf /Docs/`  |
+| `download` | 下載檔案        | `ssp download /Docs/file.pdf ./` |
+| `mkdir`    | 建立資料夾      | `ssp mkdir -p /A/B/C`            |
+| `mv`       | 移動/重命名     | `ssp mv /old.txt /new.txt`       |
+| `cp`       | 複製檔案        | `ssp cp -r /Dir /Backup/`        |
+| `logout`   | 登出清除憑證    | `ssp logout`                     |
+| `search`   | 搜尋檔案        | `ssp search report`              |
 
 ## ls 列出檔案
 
 ```bash
-ssp ls /                          # 根目錄
-ssp ls -s                         # 含隱藏檔
-ssp ls -D                         # 按日期排序
+ssp ls -d /                       # 根目錄 (使用 -d 指定目錄路徑)
+ssp ls -a                         # 顯示所有欄位
+ssp ls -s                         # 顯示檔案大小
+ssp ls -D                         # 顯示修改日期
+ssp ls -p                         # 顯示權限
 ssp ls -o                         # 顯示擁有者
-ssp ls -p                         # 顯示掛載點權限
 ```
 
 ## rm 刪除檔案
