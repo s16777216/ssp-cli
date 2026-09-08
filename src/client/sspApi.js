@@ -291,5 +291,119 @@ class SSPSpi extends SSPClient {
     }
   }
 
+  /**
+   * Copy a file or folder on the remote server using WebDAV COPY
+   * @param {string} src - Remote source path (e.g., /Documents/file.txt)
+   * @param {string} dst - Remote destination path (exact target path)
+   * @param {Object} options - Options
+   * @param {boolean} options.overwrite - Whether to overwrite existing target (Overwrite: T)
+   * @returns {Promise<Object>} Result object. status: 'success' | 'exists' (412) | 'error'
+   */
+  async copyFile(src, dst, options = {}) {
+    const { overwrite = false } = options;
+    const normalizedSrc = src.startsWith('/') ? src : `/${src}`;
+    const normalizedDst = dst.startsWith('/') ? dst : `/${dst}`;
+    const url = `/remote.php/webdav${normalizedSrc}`;
+    const destFull = `${this.baseURL}/remote.php/webdav${normalizedDst}`;
+
+    try {
+      const response = await this.client.request({
+        method: 'COPY',
+        url: url,
+        headers: {
+          'requesttoken': this.requesttoken,
+          'X-Requested-With': 'XMLHttpRequest',
+          'Destination': destFull,
+          'Overwrite': overwrite ? 'T' : 'F'
+        },
+        validateStatus: (status) => status < 500 // Don't throw on 4xx, handle manually
+      });
+
+      // 4xx handled here (validateStatus: <500 不 throw，response 含 status)
+      if (response.status === 412) {
+        return {
+          status: 'exists',
+          data: { message: `錯誤: 目標已存在 - ${normalizedDst}` }
+        };
+      }
+      if (response.status === 404) {
+        return {
+          status: 'error',
+          data: { message: `錯誤: 來源不存在 - ${normalizedSrc}` }
+        };
+      }
+      if (response.status === 403) {
+        return {
+          status: 'error',
+          data: { message: `錯誤: 權限不足` }
+        };
+      }
+      if (response.status >= 400) {
+        return {
+          status: 'error',
+          data: { message: `錯誤: 複製失敗 - HTTP ${response.status}` }
+        };
+      }
+
+      return { status: 'success' };
+    } catch (err) {
+      // 5xx 或網路錯誤
+      return {
+        status: 'error',
+        data: { message: err.response?.data || err.message }
+      };
+    }
+  }
+
+  /**
+   * Determine the type (file or collection) of a remote path using WebDAV PROPFIND Depth:0
+   * @param {string} remotePath - Remote path (e.g., /Documents/file.txt)
+   * @returns {Promise<Object>} Result object with data.type: 'file' | 'collection'
+   */
+  async statPath(remotePath) {
+    const normalized = remotePath.startsWith('/') ? remotePath : `/${remotePath}`;
+    const url = `/remote.php/webdav${normalized}`;
+
+    try {
+      const response = await this.client.request({
+        method: 'PROPFIND',
+        url: url,
+        headers: {
+          'requesttoken': this.requesttoken,
+          'X-Requested-With': 'XMLHttpRequest',
+          'Depth': '0'
+        },
+        validateStatus: (status) => status < 500 // Don't throw on 4xx, handle manually
+      });
+
+      if (response.status === 404) {
+        return {
+          status: 'error',
+          data: { message: `錯誤: 來源不存在 - ${normalized}`, code: 404 }
+        };
+      }
+      if (response.status >= 400) {
+        return {
+          status: 'error',
+          data: { message: `錯誤: 無法取得來源資訊 - HTTP ${response.status}` }
+        };
+      }
+
+      // resourcetype 內的 <collection/> 表資料夾，否則為檔案
+      // 真實 ownCloud 回傳命名空間前綴為小寫 `d:`（xmlns:d="DAV:"），故以 /i 大小寫不敏感匹配
+      const xml = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+      const isCollection = /<d?:resourcetype>[\s\S]*?<d?:collection\s*\/>[\s\S]*?<\/d?:resourcetype>/i.test(xml);
+      return {
+        status: 'success',
+        data: { type: isCollection ? 'collection' : 'file' }
+      };
+    } catch (err) {
+      return {
+        status: 'error',
+        data: { message: err.response?.data || err.message }
+      };
+    }
+  }
+
 }
 module.exports = SSPSpi;

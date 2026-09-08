@@ -82,7 +82,8 @@ ssp mkdir -p /A/B/C                       # 遞迴建立
 ```bash
 ssp mv /old.txt /new.txt                  # 重命名
 ssp mv /file.txt /Archive/                # 移動到目錄
-ssp mv -i /src.txt /dst.txt               # 目標存在時確認
+ssp mv /src.txt /dst.txt                  # 目標存在時預設互動確認
+ssp mv -y /src.txt /dst.txt               # 目標存在時自動覆蓋
 ```
 
 ## cp 複製檔案
@@ -90,7 +91,8 @@ ssp mv -i /src.txt /dst.txt               # 目標存在時確認
 ```bash
 ssp cp /file.txt /copy.txt                # 複製檔案
 ssp cp -r /Dir /Backup/                   # 遞迴複製目錄
-ssp cp -i /src.txt /dst.txt               # 目標存在時確認
+ssp cp /src.txt /dst.txt                  # 目標存在時預設互動確認
+ssp cp -y /src.txt /dst.txt               # 目標存在時自動覆蓋
 ```
 
 ## search 搜尋檔案
