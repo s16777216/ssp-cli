@@ -47,6 +47,46 @@ ssp logout
 ssp logout --all
 ```
 
+### D4: configManager.clear() API
+
+```javascript
+// configManager.js
+async clear() {
+  // 刪除 ~/.ssp-config.json
+  // 成功回傳 void，失敗拋出錯誤（如權限不足）
+  // 檔案不存在不視為錯誤（冪等）
+}
+```
+
+### D5: sspApi.logout() API
+
+```javascript
+// sspApi.js
+async logout() {
+  // POST /index.php/logout，帶 requesttoken
+  // 任何非 2xx 視為失敗，拋出錯誤供上層處理
+}
+```
+
+### D6: 錯誤訊息格式與結束碼
+
+| 情況 | 輸出 | 結束碼 |
+|------|------|--------|
+| 成功 (`logout`) | `已登出` | 0 |
+| 成功 (`logout --all`) | `已登出 (含伺服器 session)` | 0 |
+| 冪等 (無設定檔) | `已登出` | 0 |
+| 伺服器登出失敗 (`--all`) | `警告: 伺服器登出失敗，但本地憑證已清除` | 0 |
+| 本地清除失敗 (權限等) | `Error: <message>` | 非零 |
+
+錯誤訊息使用英文前綴 `Error:`，與 `ls`、`upload`、`download`、`mv` 一致。
+
+### D7: 伺服器登出失敗處理
+
+`--all` 時呼叫伺服器 API，任何非 2xx 回應視為失敗：
+1. 顯示警告 `警告: 伺服器登出失敗，但本地憑證已清除`
+2. 繼續清除本地設定檔
+3. 結束碼 0（本地清除成功）
+
 ## Risks / Trade-offs
 
 - **本地檔案不存在**：`logout` 仍顯示 `已登出`（冪等）
