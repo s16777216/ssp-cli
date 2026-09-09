@@ -19,6 +19,7 @@ const downloadCmd = require("./commands/download");
 const mkdirCmd = require("./commands/mkdir");
 const cpCmd = require("./commands/cp");
 const searchCmd = require("./commands/search");
+const mvCmd = require("./commands/mv");
 
 // Register commands
 loginCmd(program);
@@ -29,5 +30,6 @@ downloadCmd(program);
 mkdirCmd(program);
 cpCmd(program);
 searchCmd(program);
+mvCmd(program);
 
 program.parse();

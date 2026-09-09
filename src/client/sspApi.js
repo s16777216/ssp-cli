@@ -514,5 +514,76 @@ class SSPSpi extends SSPClient {
     };
   }
 
+  /**
+   * Move/rename a file or folder on the remote server using WebDAV MOVE
+   * @param {string} src - Remote source path (e.g., /Documents/file.txt)
+   * @param {string} dst - Remote destination path (exact target path)
+   * @param {Object} options - Options
+   * @param {boolean} options.overwrite - Whether to overwrite existing target (Overwrite: T)
+   * @returns {Promise<Object>} Result object. status: 'success' | 'exists' (412) | 'cross-fs' | 'error'
+   */
+  async moveFile(src, dst, options = {}) {
+    const { overwrite = false } = options;
+    const normalizedSrc = src.startsWith('/') ? src : `/${src}`;
+    const normalizedDst = dst.startsWith('/') ? dst : `/${dst}`;
+    const url = `/remote.php/webdav${normalizedSrc}`;
+    const destFull = `${this.baseURL}/remote.php/webdav${normalizedDst}`;
+
+    try {
+      const response = await this.client.request({
+        method: 'MOVE',
+        url: url,
+        headers: {
+          'requesttoken': this.requesttoken,
+          'X-Requested-With': 'XMLHttpRequest',
+          'Destination': destFull,
+          'Overwrite': overwrite ? 'T' : 'F'
+        },
+        validateStatus: (status) => status < 500 // Don't throw on 4xx, handle manually
+      });
+
+      // 4xx handled here (validateStatus: <500 不 throw，response 含 status)
+      if (response.status === 412) {
+        return {
+          status: 'exists',
+          data: { message: `Error: 目標已存在 - ${normalizedDst}` }
+        };
+      }
+      if (response.status === 404) {
+        return {
+          status: 'error',
+          data: { message: `Error: 來源不存在 - ${normalizedSrc}` }
+        };
+      }
+      if (response.status === 403) {
+        return {
+          status: 'error',
+          data: { message: `Error: 權限不足` }
+        };
+      }
+      // Cross-filesystem move not supported (some servers return 409 or 501)
+      if (response.status === 409 || response.status === 501) {
+        return {
+          status: 'cross-fs',
+          data: { message: `Error: 不支援跨儲存空間移動，請改用 cp + rm` }
+        };
+      }
+      if (response.status >= 400) {
+        return {
+          status: 'error',
+          data: { message: `Error: 移動失敗 - HTTP ${response.status}` }
+        };
+      }
+
+      return { status: 'success' };
+    } catch (err) {
+      // 5xx 或網路錯誤
+      return {
+        status: 'error',
+        data: { message: err.response?.data || err.message }
+      };
+    }
+  }
+
 }
 module.exports = SSPSpi;

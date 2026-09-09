@@ -1,0 +1,59 @@
+## Purpose
+
+The `file-move` capability enables users to move or rename files and folders on the remote Mailcloud server using the WebDAV MOVE protocol. It supports single-file/folder moves, exact target path semantics, interactive overwrite confirmation, and automatic overwrite with a flag. Cross-storage moves are explicitly not supported.
+
+## ADDED Requirements
+
+### Requirement: User can move/rename a file or folder on remote server
+
+The system SHALL allow users to move or rename a file or folder on Mailcloud server using WebDAV MOVE protocol.
+
+#### Scenario: Successful file move/rename
+
+- **WHEN** user executes `ssp mv <src> <dst>`
+- **THEN** system moves/renames the file/folder from `<src>` to `<dst>`
+
+#### Scenario: Move destination is treated as exact target path
+
+- **WHEN** user executes `ssp mv <src> <dst>`
+- **THEN** system moves the source to the exact path `<dst>`, without auto-inserting into a directory even if `<dst>` is an existing directory
+
+#### Scenario: Target already exists (default interactive)
+
+- **WHEN** target `<dst>` already exists and user executes `ssp mv <src> <dst>`
+- **THEN** system prompts `目標已存在，覆蓋？ [y/N]`, proceeds only on `y` (re-issues MOVE with `Overwrite: T`)
+
+#### Scenario: Target already exists with -y flag
+
+- **WHEN** user executes `ssp mv -y <src> <dst>` and target exists
+- **THEN** system automatically overwrites the target without prompting (re-issues MOVE with `Overwrite: T`)
+
+#### Scenario: Source validated before move
+
+- **WHEN** user executes `ssp mv <src> <dst>` and `<src>` does not exist
+- **THEN** system validates source via statPath first, displays `Error: 來源不存在 - <src>` and exits with non-zero code
+
+#### Scenario: Cross-storage move rejected
+
+- **WHEN** user attempts to move across storage spaces (detected via server error)
+- **THEN** system displays `Error: 不支援跨儲存空間移動，請改用 cp + rm` and exits with non-zero code
+
+#### Scenario: Destination parent directory missing
+
+- **WHEN** user executes `ssp mv <src> <dst>` and parent directory of `<dst>` does not exist
+- **THEN** system displays `Error: 目標目錄不存在` and exits with non-zero code
+
+#### Scenario: Permission denied
+
+- **WHEN** user lacks permission to move `<src>` or write to `<dst>`
+- **THEN** system displays error message from server and exits with non-zero code
+
+#### Scenario: Successful move completion
+
+- **WHEN** move completes successfully
+- **THEN** system displays `移動完成: <dst>` and exits with code 0
+
+#### Scenario: User cancels overwrite in interactive mode
+
+- **WHEN** target exists and user enters `n` at `目標已存在，覆蓋？ [y/N]` prompt
+- **THEN** system displays `已取消移動` and exits with code 0
