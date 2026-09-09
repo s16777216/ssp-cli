@@ -405,5 +405,52 @@ class SSPSpi extends SSPClient {
     }
   }
 
+  /**
+   * Search files on the remote server using AJAX search endpoint
+   * @param {string} keyword - Search keyword
+   * @param {Object} options - Options
+   * @param {string} options.type - Filter by type: 'file' | 'dir' | 'all' (default: 'all')
+   * @param {boolean} options.content - Search file content (requires server full-text index)
+   * @returns {Promise<Object>} Result object with status and data
+   */
+  async searchFiles(keyword, options = {}) {
+    const { type = 'all', content = false } = options;
+    
+    // Build query parameters
+    const params = new URLSearchParams();
+    params.append('search', keyword);
+    
+    if (type !== 'all') {
+      params.append('type', type);
+    }
+    
+    if (content) {
+      params.append('content', '1');
+    }
+    
+    const url = `/index.php/apps/files/ajax/search.php?${params.toString()}`;
+    
+    try {
+      const response = await this.request('GET', url);
+      
+      if (response && response.status === 'success' && response.data) {
+        return {
+          status: 'success',
+          data: response.data
+        };
+      }
+      
+      return {
+        status: 'error',
+        data: { message: response?.data?.message || '搜尋失敗' }
+      };
+    } catch (err) {
+      return {
+        status: 'error',
+        data: { message: err.response?.data || err.message }
+      };
+    }
+  }
+
 }
 module.exports = SSPSpi;
