@@ -20,6 +20,7 @@ const mkdirCmd = require("./commands/mkdir");
 const cpCmd = require("./commands/cp");
 const searchCmd = require("./commands/search");
 const mvCmd = require("./commands/mv");
+const logoutCmd = require("./commands/logout");
 
 // Register commands
 loginCmd(program);
@@ -31,5 +32,6 @@ mkdirCmd(program);
 cpCmd(program);
 searchCmd(program);
 mvCmd(program);
+logoutCmd(program);
 
 program.parse();

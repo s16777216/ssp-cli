@@ -33,6 +33,16 @@ class ConfigManager {
     const config = this.load();
     return config[key];
   }
+
+  clear() {
+    try {
+      if (fs.existsSync(this.configPath)) {
+        fs.unlinkSync(this.configPath);
+      }
+    } catch (err) {
+      throw new Error(`Failed to clear config: ${err.message}`);
+    }
+  }
 }
 
 module.exports = new ConfigManager();

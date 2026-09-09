@@ -585,5 +585,37 @@ class SSPSpi extends SSPClient {
     }
   }
 
+  /**
+   * Logout from the server by calling the logout API
+   * @returns {Promise<Object>} Result object with status and data
+   */
+  async logout() {
+    try {
+      const response = await this.client.request({
+        method: 'POST',
+        url: '/index.php/logout',
+        headers: {
+          'requesttoken': this.requesttoken,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        validateStatus: (status) => status < 500
+      });
+
+      if (response.status >= 200 && response.status < 300) {
+        return { status: 'success' };
+      }
+      
+      return {
+        status: 'error',
+        data: { message: `HTTP ${response.status}` }
+      };
+    } catch (err) {
+      return {
+        status: 'error',
+        data: { message: err.response?.data || err.message }
+      };
+    }
+  }
+
 }
 module.exports = SSPSpi;
