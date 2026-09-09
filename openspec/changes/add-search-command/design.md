@@ -41,30 +41,34 @@ Headers: requesttoken, X-Requested-With
 
 **選擇理由：** AJAX 端點較簡單，回傳格式固定，ownCloud 完整支援。
 
-### D2: 搜尋範圍
+### D2: 搜尋範圍與參數
 
 | 旗標 | 範圍 |
 |------|------|
-| 預設 | 檔名搜尋 |
-| `-c` / `--content` | 檔案內容搜尋（需伺服器支援全文索引） |
+| 預設 | 檔名搜尋（遞迴搜尋整個可見掛載點） |
+| `-c` / `--content` | 檔案內容搜尋（需伺服器支援全文索引，傳送 `content=1`） |
 
-**選擇理由：** 預設檔名搜尋速度較快，內容搜尋需伺服器端建立全文索引。
+**選擇理由：** 預設檔名搜尋速度較快，內容搜尋需伺服器端建立全文索引。搜尋範圍為整個可見掛載點（遞迴），非單層目錄。
 
 ### D3: 類型篩選
 
 ```bash
-ssp search report
-ssp search -t file report
-ssp search -t dir report
-ssp search -t all report
+ssp search report              # 預設搜尋所有類型 (file + dir)
+ssp search -t file report      # 僅搜尋檔案
+ssp search -t dir report       # 僅搜尋目錄
+ssp search -t all report       # 明確指定搜尋所有類型
 ```
+
+**選擇理由：** 預設 `all`（檔案與目錄皆搜尋），與 `ls` 行為一致。`-t file|dir` 為縮小篩選條件。
 
 ### D4: 輸出格式
 
 | 旗標 | 輸出 |
 |------|------|
-| 預設 | 表格（同 `ls` 風格，含名稱、大小、日期、權限、擁有者） |
+| 預設 | 表格（同 `ls` 風格，預設顯示名稱、大小、日期） |
 | `--json` | JSON 陣列 |
+
+支援 `ls` 相同的欄位旗標：`-a/--all` (全部欄位)、`-s/--size`、`-D/--date`、`-p/--perm`、`-o/--owner`。
 
 ### D5: 指令格式
 
@@ -73,7 +77,24 @@ ssp search <keyword>
 ssp search -c <keyword>
 ssp search -t file <keyword>
 ssp search --json <keyword>
+ssp search -a -s -D <keyword>   # 顯示全部/大小/日期欄位
 ```
+
+### D6: 錯誤處理與結束碼
+
+| 情況 | 輸出 | 結束碼 |
+|------|------|--------|
+| 成功（有結果） | 表格或 JSON | 0 |
+| 成功（無結果） | `無符合結果` | 0 |
+| 錯誤 | `錯誤: <message>` | 非零 |
+
+錯誤訊息使用中文（與 `cp`、`rm` 一致）。
+
+### D7: 其他行為
+
+- **大小寫不敏感**：跟隨伺服器預設行為
+- **中文/特殊字元**：關鍵字自動 URL 編碼
+- **分頁**：MVP 不支援自動分頁（已知限制，文件化於風險）
 
 ## Risks / Trade-offs
 
