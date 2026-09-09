@@ -416,40 +416,102 @@ class SSPSpi extends SSPClient {
   async searchFiles(keyword, options = {}) {
     const { type = 'all', content = false } = options;
     
-    // Build query parameters
-    const params = new URLSearchParams();
-    params.append('search', keyword);
+    // Try modern search endpoint first (ownCloud 10+), fallback to legacy
+    const endpoints = [
+      '/index.php/search/ajax/search.php',
+      '/index.php/apps/files/ajax/search.php'
+    ];
     
-    if (type !== 'all') {
-      params.append('type', type);
-    }
-    
-    if (content) {
-      params.append('content', '1');
-    }
-    
-    const url = `/index.php/apps/files/ajax/search.php?${params.toString()}`;
-    
-    try {
-      const response = await this.request('GET', url);
+    for (const endpoint of endpoints) {
+      // Build query parameters
+      const params = new URLSearchParams();
+      // Modern endpoint uses 'query', legacy uses 'search'
+      const queryParam = endpoint.includes('/search/ajax/') ? 'query' : 'search';
+      params.append(queryParam, keyword);
       
-      if (response && response.status === 'success' && response.data) {
-        return {
-          status: 'success',
-          data: response.data
-        };
+      if (endpoint.includes('/search/ajax/')) {
+        params.append('inApps[]', 'files');
       }
       
-      return {
-        status: 'error',
-        data: { message: response?.data?.message || '搜尋失敗' }
-      };
-    } catch (err) {
-      return {
-        status: 'error',
-        data: { message: err.response?.data || err.message }
-      };
+      if (type !== 'all') {
+        params.append('type', type);
+      }
+      
+      if (content) {
+        params.append('content', '1');
+      }
+      
+      const url = `${endpoint}?${params.toString()}`;
+      
+      try {
+        // Use client.request directly to get full response with status code
+        const response = await this.client.request({
+          method: 'GET',
+          url: url,
+          headers: {
+            'requesttoken': this.requesttoken,
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          validateStatus: (status) => status < 500
+        });
+        
+        // Check HTTP status code
+        if (response.status === 404) {
+          continue; // Try next endpoint
+        }
+        
+        // Parse response body
+        const body = response.data;
+        
+        // Modern endpoint (search/ajax): returns {data: [...], total: N} or {status: "error", data: {...}}
+        // Legacy endpoint (files/ajax): returns {status: "success", data: {files: [...]}} or error
+        let files = [];
+        
+        if (Array.isArray(body?.data)) {
+          // Modern format: {data: [...], total: N}
+          files = body.data;
+        } else if (body?.status === 'success' && Array.isArray(body?.data?.files)) {
+          // Legacy format: {status: "success", data: {files: [...]}}
+          files = body.data.files;
+        } else if (body?.status === 'success' && Array.isArray(body?.data?.elements)) {
+          // Other format: {status: "success", data: {elements: [...]}}
+          files = body.data.elements;
+        } else if (body && body.status === 'error') {
+          // API error - try next endpoint
+          continue;
+        }
+        
+        if (files.length > 0 || files.length === 0) {
+          // Filter by type if specified
+          let filtered = files;
+          if (type === 'file') {
+            filtered = files.filter(f => f.type === 'file');
+          } else if (type === 'dir') {
+            filtered = files.filter(f => f.type === 'dir' || f.type === 'folder');
+          }
+          
+          return {
+            status: 'success',
+            data: { files: filtered }
+          };
+        }
+      } catch (err) {
+        // Network error or 4xx/5xx that threw
+        if (err.response?.status === 404) {
+          continue; // Try next endpoint
+        }
+        return {
+          status: 'error',
+          data: { message: err.response?.data || err.message }
+        };
+      }
     }
+    
+    // All endpoints failed
+    return {
+      status: 'error',
+      data: { message: '搜尋端點不可用' }
+    };
   }
 
 }

@@ -62,10 +62,12 @@ module.exports = (program) => {
               console.log("無符合結果");
             } else {
               result.data.files.forEach((file) => {
-                const isDir = file.type === "dir";
+                const isDir = file.type === "dir" || file.type === "folder";
+                // 顯示完整路徑而非只有檔名
+                const displayName = file.path || file.name;
                 const name = isDir
-                  ? `${c.dir}${file.name}${c.reset}`
-                  : `${c.file}${file.name}${c.reset}`;
+                  ? `${c.dir}${displayName}${c.reset}`
+                  : `${c.file}${displayName}${c.reset}`;
 
                 const row = [name];
                 if (showSize)

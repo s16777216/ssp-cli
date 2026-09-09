@@ -24,10 +24,20 @@ The system SHALL allow users to move or rename a file or folder on Mailcloud ser
 - **WHEN** user executes `ssp mv -y <src> <dst>` and target exists
 - **THEN** system automatically overwrites the target without prompting (re-issues MOVE with `Overwrite: T`)
 
-#### Scenario: Source not found
+#### Scenario: Source validated before move
 
-- **WHEN** source `<src>` does not exist
-- **THEN** system displays error `錯誤: 來源不存在 - <src>` and exits with non-zero code
+- **WHEN** user executes `ssp mv <src> <dst>` and `<src>` does not exist
+- **THEN** system validates source via statPath first, displays `Error: 來源不存在 - <src>` and exits with non-zero code
+
+#### Scenario: Cross-storage move rejected
+
+- **WHEN** user attempts to move across storage spaces (detected via server error)
+- **THEN** system displays `Error: 不支援跨儲存空間移動，請改用 cp + rm` and exits with non-zero code
+
+#### Scenario: Destination parent directory missing
+
+- **WHEN** user executes `ssp mv <src> <dst>` and parent directory of `<dst>` does not exist
+- **THEN** system displays `Error: 目標目錄不存在` and exits with non-zero code
 
 #### Scenario: Permission denied
 
@@ -37,4 +47,9 @@ The system SHALL allow users to move or rename a file or folder on Mailcloud ser
 #### Scenario: Successful move completion
 
 - **WHEN** move completes successfully
-- **THEN** system displays `移動完成: <dst>`
+- **THEN** system displays `移動完成: <dst>` and exits with code 0
+
+#### Scenario: User cancels overwrite in interactive mode
+
+- **WHEN** target exists and user enters `n` at `目標已存在，覆蓋？ [y/N]` prompt
+- **THEN** system displays `已取消移動` and exits with code 0
