@@ -13,6 +13,7 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    environment: Publish
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,3 +34,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # 暫時停用 provenance：首次發布時 OIDC 404 (package not found)。
+          # 首次發布成功後可移除此環境變數以啟用 provenance。
+          npm_config_provenance: 'false'
