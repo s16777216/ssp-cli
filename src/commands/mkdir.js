@@ -15,7 +15,7 @@ module.exports = (program) => {
         const username = configManager.get("username");
         if (!username) {
           console.error(
-            "Please login first using: ssp login -u <user> -p <pass>",
+            "Error: Please login first using: ssp login -u <user> -p <pass>",
           );
           process.exit(1);
         }
@@ -26,20 +26,23 @@ module.exports = (program) => {
         if (savedToken) api.requesttoken = savedToken;
         if (savedCookies) api.setCookieString(savedCookies);
 
-        console.log(`建立資料夾: ${remotePath}`);
+        console.log(`Creating folder: ${remotePath}`);
         
         const result = await api.createFolder(remotePath, {
           recursive: options.parents
         });
         
         if (result && result.status === "success") {
-          console.log(`建立完成: ${remotePath}`);
+          console.log(`Folder created: ${remotePath}`);
+        } else if (result && result.status === "exists") {
+          console.error(`Error: Folder already exists - ${remotePath}`);
+          process.exit(1);
         } else {
-          console.error(`錯誤: ${result.data ? result.data.message : "Unknown error"}`);
+          console.error(`Error: ${result.data ? result.data.message : "Unknown error"}`);
           process.exit(1);
         }
       } catch (err) {
-        console.error("Error:", err.message);
+        console.error(`Error: ${err.message}`);
         process.exit(1);
       }
     });

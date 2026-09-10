@@ -14,7 +14,7 @@ module.exports = (program) => {
         // Check if logged in
         const username = configManager.get("username");
         if (!username) {
-          console.log("已登出");
+          console.log("Logged out");
           return;
         }
 
@@ -28,7 +28,7 @@ module.exports = (program) => {
         if (options.all) {
           const logoutResult = await api.logout();
           if (logoutResult.status === 'error') {
-            console.warn(`警告: 伺服器登出失敗，但本地憑證已清除`);
+            console.warn(`Warning: Server logout failed, local credentials cleared`);
           }
         }
 
@@ -36,9 +36,9 @@ module.exports = (program) => {
         configManager.clear();
 
         if (options.all) {
-          console.log("已登出 (含伺服器 session)");
+          console.log("Logged out (including server session)");
         } else {
-          console.log("已登出");
+          console.log("Logged out");
         }
       } catch (err) {
         console.error(`Error: ${err.message}`);

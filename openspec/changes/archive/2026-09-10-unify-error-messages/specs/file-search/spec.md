@@ -1,8 +1,4 @@
-## Purpose
-
-The `file-search` capability enables users to search files and directories on the remote Mailcloud server using the AJAX search endpoint. It supports filename search, content search (with server-side full-text index), type filtering, and flexible output formats.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: User can search files on remote server
 

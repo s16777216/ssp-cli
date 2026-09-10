@@ -115,13 +115,13 @@ test("searchFiles filters by type client-side when type=dir", async () => {
 test("searchFiles returns error on API error response (falls back, then fails)", async () => {
   const api = makeApiWithMockRequest(async () => ({
     status: 200,
-    data: { status: 'error', data: { message: "伺服器錯誤" } },
+    data: { status: 'error', data: { message: "Server error" } },
   }));
 
   const result = await api.searchFiles("report");
 
   assert.strictEqual(result.status, "error");
-  assert.match(result.data.message, /搜尋端點不可用/);
+  assert.match(result.data.message, /Search endpoint unavailable/);
 });
 
 test("searchFiles returns error on network failure", async () => {

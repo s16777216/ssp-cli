@@ -16,7 +16,7 @@ module.exports = (program) => {
         const username = configManager.get("username");
         if (!username) {
           console.error(
-            "Please login first using: ssp login -u <user> -p <pass>",
+            "Error: Please login first using: ssp login -u <user> -p <pass>",
           );
           process.exit(1);
         }
@@ -29,11 +29,11 @@ module.exports = (program) => {
 
         // Check if local file exists
         if (!fs.existsSync(localFile)) {
-          console.error(`錯誤: 檔案不存在 - ${localFile}`);
+          console.error(`Error: File not found - ${localFile}`);
           process.exit(1);
         }
 
-        console.log(`上傳中...`);
+        console.log(`Uploading...`);
         
         let lastPercent = -1;
         
@@ -43,7 +43,7 @@ module.exports = (program) => {
             lastPercent = progress.percent;
             // Use \r to overwrite the same line
             process.stdout.write(
-              `\r${c.bold}上傳中...${c.reset} ${progress.percent}% (${progress.loaded} / ${progress.total}) @ ${progress.speed}`
+              `\r${c.bold}Uploading...${c.reset} ${progress.percent}% (${progress.loaded} / ${progress.total}) @ ${progress.speed}`
             );
           }
         });
@@ -52,13 +52,13 @@ module.exports = (program) => {
         process.stdout.write("\r\x1b[K");
         
         if (result && result.status === "success") {
-          console.log(`上傳完成: ${remotePath}`);
+          console.log(`Upload complete: ${remotePath}`);
         } else {
-          console.error(`錯誤: 上傳失敗 - ${result.data ? result.data.message : "Unknown error"}`);
+          console.error(`Error: Upload failed - ${result.data ? result.data.message : "Unknown error"}`);
           process.exit(1);
         }
       } catch (err) {
-        console.error("Error:", err.message);
+        console.error(`Error: ${err.message}`);
         process.exit(1);
       }
     });

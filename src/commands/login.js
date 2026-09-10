@@ -20,7 +20,7 @@ module.exports = (program) => {
         });
         console.log("Login successful! Credentials saved.");
       } catch (err) {
-        console.error("Login failed:", err.message);
+        console.error(`Error: ${err.message}`);
         process.exit(1);
       }
     });

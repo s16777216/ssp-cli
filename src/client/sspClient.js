@@ -41,6 +41,23 @@ class SSPClient {
       }
     });
 
+    // 3. Verify the session is actually usable before returning credentials.
+    // The server may return HTTP 200 for failed logins (e.g. wrong password),
+    // so a protected request is required to confirm the session truly works.
+    try {
+      await this.client.request({
+        method: 'PROPFIND',
+        url: '/remote.php/webdav/',
+        headers: {
+          'requesttoken': this.requesttoken,
+          'X-Requested-With': 'XMLHttpRequest',
+          'Depth': '0'
+        }
+      });
+    } catch (verifyErr) {
+      throw new Error('Login failed - Session verification failed');
+    }
+
     return {
       success: true,
       requesttoken: this.requesttoken,

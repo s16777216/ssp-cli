@@ -1,8 +1,4 @@
-## Purpose
-
-The `auth-logout` capability enables users to log out from the Mailcloud server by clearing locally stored credentials (username, password, requesttoken, cookies) and optionally revoking the server-side session.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: User can logout and clear credentials
 

@@ -1,8 +1,4 @@
-## Purpose
-
-The `file-copy` capability enables users to copy files and folders on the remote Mailcloud server using the WebDAV COPY protocol. It supports single-file copy, recursive folder copy, interactive overwrite confirmation, and automatic overwrite with a flag.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: User can copy a file or folder on remote server
 

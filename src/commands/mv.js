@@ -14,7 +14,7 @@ module.exports = (program) => {
         const username = configManager.get("username");
         if (!username) {
           console.error(
-            "Please login first using: ssp login -u <user> -p <pass>",
+            "Error: Please login first using: ssp login -u <user> -p <pass>",
           );
           process.exit(1);
         }
@@ -50,7 +50,7 @@ module.exports = (program) => {
               output: process.stdout,
             });
             const answer = await new Promise((resolve) => {
-              rl.question(`目標已存在，覆蓋？ [y/N] `, (ans) => {
+              rl.question(`Destination already exists, overwrite? [y/N] `, (ans) => {
                 rl.close();
                 resolve(ans.trim().toLowerCase());
               });
@@ -58,7 +58,7 @@ module.exports = (program) => {
             if (answer === "y") {
               result = await attemptMove(true);
             } else {
-              console.log("已取消移動");
+              console.log("Move cancelled");
               return;
             }
           }
@@ -71,7 +71,7 @@ module.exports = (program) => {
         }
 
         if (result && result.status === "success") {
-          console.log(`移動完成: ${dst}`);
+          console.log(`Move complete: ${dst}`);
         } else {
           console.error(
             `Error: ${result.data ? result.data.message : "Unknown error"}`,
@@ -79,7 +79,7 @@ module.exports = (program) => {
           process.exit(1);
         }
       } catch (err) {
-        console.error("Error:", err.message);
+        console.error(`Error: ${err.message}`);
         process.exit(1);
       }
     });

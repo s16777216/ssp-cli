@@ -44,21 +44,21 @@ test("copyFile returns status exists on 412", async () => {
   const api = makeApiWithMockRequest(async () => ({ status: 412, data: {} }));
   const result = await api.copyFile("/a.txt", "/b.txt");
   assert.strictEqual(result.status, "exists");
-  assert.match(result.data.message, /目標已存在/);
+  assert.match(result.data.message, /Destination already exists/);
 });
 
-test("copyFile returns error with 來源不存在 on 404", async () => {
+test("copyFile returns error with Source not found on 404", async () => {
   const api = makeApiWithMockRequest(async () => ({ status: 404, data: {} }));
   const result = await api.copyFile("/missing.txt", "/b.txt");
   assert.strictEqual(result.status, "error");
-  assert.match(result.data.message, /來源不存在/);
+  assert.match(result.data.message, /Source not found/);
 });
 
-test("copyFile returns error 權限不足 on 403", async () => {
+test("copyFile returns error Permission denied on 403", async () => {
   const api = makeApiWithMockRequest(async () => ({ status: 403, data: {} }));
   const result = await api.copyFile("/a.txt", "/b.txt");
   assert.strictEqual(result.status, "error");
-  assert.match(result.data.message, /權限不足/);
+  assert.match(result.data.message, /Permission denied/);
 });
 
 test("copyFile returns error on 5xx throw", async () => {
@@ -112,11 +112,11 @@ test("statPath identifies a collection with lowercase d: prefix (real ownCloud X
   assert.strictEqual(result.data.type, "collection");
 });
 
-test("statPath returns error 來源不存在 on 404", async () => {
+test("statPath returns error Source not found on 404", async () => {
   const api = makeApiWithMockRequest(async () => ({ status: 404, data: {} }));
   const result = await api.statPath("/missing.txt");
   assert.strictEqual(result.status, "error");
-  assert.match(result.data.message, /來源不存在/);
+  assert.match(result.data.message, /Source not found/);
 });
 
 test("statPath returns error on other 4xx", async () => {

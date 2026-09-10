@@ -125,8 +125,8 @@ async function main() {
 
     section("6. source not found (cp flow: statPath intercepts before copy)");
     const missingStat = await api.statPath(`${TEST_DIR}/does-not-exist.txt`);
-    ok(missingStat.status === "error" && /來源不存在/.test(missingStat.data.message),
-      `statPath(missing) → error 來源不存在`, missingStat);
+    ok(missingStat.status === "error" && /Source not found/.test(missingStat.data.message),
+      `statPath(missing) → error Source not found`, missingStat);
   } finally {
     // Cleanup: delete the smoke-test directory, then verify via statPath it is gone.
     section("Cleanup: remove smoke test directory");

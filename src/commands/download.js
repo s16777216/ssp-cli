@@ -16,7 +16,7 @@ module.exports = (program) => {
         const username = configManager.get("username");
         if (!username) {
           console.error(
-            "Please login first using: ssp login -u <user> -p <pass>",
+            "Error: Please login first using: ssp login -u <user> -p <pass>",
           );
           process.exit(1);
         }
@@ -42,7 +42,7 @@ module.exports = (program) => {
           localPath = path.join(process.cwd(), filename);
         }
 
-        console.log(`下載中...`);
+        console.log(`Downloading...`);
         
         let lastPercent = -1;
         
@@ -52,7 +52,7 @@ module.exports = (program) => {
             lastPercent = progress.percent;
             // Use \r to overwrite the same line
             process.stdout.write(
-              `\r${c.bold}下載中...${c.reset} ${progress.percent}% (${progress.loaded} / ${progress.total}) @ ${progress.speed}`
+              `\r${c.bold}Downloading...${c.reset} ${progress.percent}% (${progress.loaded} / ${progress.total}) @ ${progress.speed}`
             );
           }
         });
@@ -64,7 +64,7 @@ module.exports = (program) => {
         // console.log('DEBUG result:', JSON.stringify(result, null, 2));
         
         if (result && result.status === "success") {
-          console.log(`下載完成: ${localPath}`);
+          console.log(`Download complete: ${localPath}`);
         } else {
           let errorMsg = "Unknown error";
           if (result.data) {
@@ -85,11 +85,11 @@ module.exports = (program) => {
               errorMsg = String(result.data);
             }
           }
-          console.error(`錯誤: 下載失敗 - ${errorMsg}`);
+          console.error(`Error: Download failed - ${errorMsg}`);
           process.exit(1);
         }
       } catch (err) {
-        console.error("Error:", err.message);
+        console.error(`Error: ${err.message}`);
         process.exit(1);
       }
     });

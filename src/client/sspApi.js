@@ -63,7 +63,7 @@ class SSPSpi extends SSPClient {
     if (!fs.existsSync(localPath)) {
       return {
         status: 'error',
-        data: { message: `錯誤: 檔案不存在 - ${localPath}` }
+        data: { message: `File not found - ${localPath}` }
       };
     }
 
@@ -240,30 +240,36 @@ class SSPSpi extends SSPClient {
     
     const mkcolRequest = async (path) => {
       try {
-        await this.client.request({
+        const response = await this.client.request({
           method: 'MKCOL',
           url: `/remote.php/webdav${path}`,
           headers: {
             'requesttoken': this.requesttoken,
             'X-Requested-With': 'XMLHttpRequest'
           },
-          validateStatus: (status) => status < 500
+          validateStatus: (status) => status < 500 // Don't throw on 4xx, handle manually
         });
+
+        // 4xx handled here (validateStatus: <500 不 throw，response 含 status)
+        if (response.status === 405) {
+          return { status: 'exists' };
+        }
+        if (response.status === 409) {
+          return { status: 'error', data: { message: 'Parent directory not found' } };
+        }
+        if (response.status === 403) {
+          return { status: 'error', data: { message: 'Permission denied' } };
+        }
+        if (response.status >= 400) {
+          return {
+            status: 'error',
+            data: { message: `Create folder failed - HTTP ${response.status}` }
+          };
+        }
+
         return { status: 'success' };
       } catch (err) {
-        // Check for specific error status
-        if (err.response) {
-          const status = err.response.status;
-          if (status === 405) {
-            return { status: 'error', data: { message: `錯誤: 資料夾已存在 - ${normalizedRemotePath}` } };
-          }
-          if (status === 409) {
-            return { status: 'error', data: { message: `錯誤: 父目錄不存在` } };
-          }
-          if (status === 403) {
-            return { status: 'error', data: { message: `錯誤: 權限不足` } };
-          }
-        }
+        // 5xx 或網路錯誤
         return {
           status: 'error',
           data: { message: err.response?.data || err.message }
@@ -280,7 +286,7 @@ class SSPSpi extends SSPClient {
         currentPath += `/${segment}`;
         // Try to create each level, ignore "already exists" errors
         const result = await mkcolRequest(currentPath);
-        if (result.status === 'error' && !result.data.message.includes('已存在')) {
+        if (result.status === 'error') {
           return result;
         }
       }
@@ -323,25 +329,25 @@ class SSPSpi extends SSPClient {
       if (response.status === 412) {
         return {
           status: 'exists',
-          data: { message: `錯誤: 目標已存在 - ${normalizedDst}` }
+          data: { message: `Destination already exists - ${normalizedDst}` }
         };
       }
       if (response.status === 404) {
         return {
           status: 'error',
-          data: { message: `錯誤: 來源不存在 - ${normalizedSrc}` }
+          data: { message: `Source not found - ${normalizedSrc}` }
         };
       }
       if (response.status === 403) {
         return {
           status: 'error',
-          data: { message: `錯誤: 權限不足` }
+          data: { message: 'Permission denied' }
         };
       }
       if (response.status >= 400) {
         return {
           status: 'error',
-          data: { message: `錯誤: 複製失敗 - HTTP ${response.status}` }
+          data: { message: `Copy failed - HTTP ${response.status}` }
         };
       }
 
@@ -379,13 +385,13 @@ class SSPSpi extends SSPClient {
       if (response.status === 404) {
         return {
           status: 'error',
-          data: { message: `錯誤: 來源不存在 - ${normalized}`, code: 404 }
+          data: { message: `Source not found - ${normalized}`, code: 404 }
         };
       }
       if (response.status >= 400) {
         return {
           status: 'error',
-          data: { message: `錯誤: 無法取得來源資訊 - HTTP ${response.status}` }
+          data: { message: `Failed to get source info - HTTP ${response.status}` }
         };
       }
 
@@ -510,7 +516,7 @@ class SSPSpi extends SSPClient {
     // All endpoints failed
     return {
       status: 'error',
-      data: { message: '搜尋端點不可用' }
+      data: { message: 'Search endpoint unavailable' }
     };
   }
 
@@ -546,32 +552,32 @@ class SSPSpi extends SSPClient {
       if (response.status === 412) {
         return {
           status: 'exists',
-          data: { message: `Error: 目標已存在 - ${normalizedDst}` }
+          data: { message: `Destination already exists - ${normalizedDst}` }
         };
       }
       if (response.status === 404) {
         return {
           status: 'error',
-          data: { message: `Error: 來源不存在 - ${normalizedSrc}` }
+          data: { message: `Source not found - ${normalizedSrc}` }
         };
       }
       if (response.status === 403) {
         return {
           status: 'error',
-          data: { message: `Error: 權限不足` }
+          data: { message: 'Permission denied' }
         };
       }
       // Cross-filesystem move not supported (some servers return 409 or 501)
       if (response.status === 409 || response.status === 501) {
         return {
           status: 'cross-fs',
-          data: { message: `Error: 不支援跨儲存空間移動，請改用 cp + rm` }
+          data: { message: 'Cross-storage move not supported, use cp + rm instead' }
         };
       }
       if (response.status >= 400) {
         return {
           status: 'error',
-          data: { message: `Error: 移動失敗 - HTTP ${response.status}` }
+          data: { message: `Move failed - HTTP ${response.status}` }
         };
       }
 

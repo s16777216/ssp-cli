@@ -1,10 +1,4 @@
-# file-upload Spec
-
-## Purpose
-
-本 capability 定義 Mailcloud (SecuSharePro) 雲端檔案儲存系統的上傳功能，透過 WebDAV PUT 協定將本機檔案上傳至遠端伺服器。
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: User can upload a file to remote server
 

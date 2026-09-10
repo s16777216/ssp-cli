@@ -44,35 +44,35 @@ test("moveFile returns status exists on 412", async () => {
   const api = makeApiWithMockRequest(async () => ({ status: 412, data: {} }));
   const result = await api.moveFile("/a.txt", "/b.txt");
   assert.strictEqual(result.status, "exists");
-  assert.match(result.data.message, /目標已存在/);
+  assert.match(result.data.message, /Destination already exists/);
 });
 
-test("moveFile returns error with 來源不存在 on 404", async () => {
+test("moveFile returns error with Source not found on 404", async () => {
   const api = makeApiWithMockRequest(async () => ({ status: 404, data: {} }));
   const result = await api.moveFile("/missing.txt", "/b.txt");
   assert.strictEqual(result.status, "error");
-  assert.match(result.data.message, /來源不存在/);
+  assert.match(result.data.message, /Source not found/);
 });
 
-test("moveFile returns error 權限不足 on 403", async () => {
+test("moveFile returns error Permission denied on 403", async () => {
   const api = makeApiWithMockRequest(async () => ({ status: 403, data: {} }));
   const result = await api.moveFile("/a.txt", "/b.txt");
   assert.strictEqual(result.status, "error");
-  assert.match(result.data.message, /權限不足/);
+  assert.match(result.data.message, /Permission denied/);
 });
 
 test("moveFile returns cross-fs on 409 (cross-filesystem not supported)", async () => {
   const api = makeApiWithMockRequest(async () => ({ status: 409, data: {} }));
   const result = await api.moveFile("/a.txt", "/b.txt");
   assert.strictEqual(result.status, "cross-fs");
-  assert.match(result.data.message, /跨儲存空間移動/);
+  assert.match(result.data.message, /Cross-storage move not supported/);
 });
 
 test("moveFile returns cross-fs on 501 (cross-filesystem not supported)", async () => {
   const api = makeApiWithMockRequest(async () => ({ status: 501, data: {} }));
   const result = await api.moveFile("/a.txt", "/b.txt");
   assert.strictEqual(result.status, "cross-fs");
-  assert.match(result.data.message, /跨儲存空間移動/);
+  assert.match(result.data.message, /Cross-storage move not supported/);
 });
 
 test("moveFile returns error on 5xx throw", async () => {

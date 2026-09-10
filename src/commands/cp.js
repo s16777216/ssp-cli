@@ -15,7 +15,7 @@ module.exports = (program) => {
         const username = configManager.get("username");
         if (!username) {
           console.error(
-            "Please login first using: ssp login -u <user> -p <pass>",
+            "Error: Please login first using: ssp login -u <user> -p <pass>",
           );
           process.exit(1);
         }
@@ -29,7 +29,7 @@ module.exports = (program) => {
         // Determine source type (file vs folder) via PROPFIND Depth:0
         const stat = await api.statPath(src);
         if (stat.status === "error") {
-          console.error(`錯誤: ${stat.data ? stat.data.message : "Unknown error"}`);
+          console.error(`Error: ${stat.data ? stat.data.message : "Unknown error"}`);
           process.exit(1);
         }
 
@@ -37,7 +37,7 @@ module.exports = (program) => {
 
         // Folder source requires -r flag (unless -r, error out)
         if (isCollection && !options.recursive) {
-          console.error("錯誤: 來源為資料夾，請使用 -r");
+          console.error("Error: Source is a folder, use -r");
           process.exit(1);
         }
 
@@ -59,7 +59,7 @@ module.exports = (program) => {
               output: process.stdout,
             });
             const answer = await new Promise((resolve) => {
-              rl.question(`目標已存在，覆蓋？ [y/N] `, (ans) => {
+              rl.question(`Destination already exists, overwrite? [y/N] `, (ans) => {
                 rl.close();
                 resolve(ans.trim().toLowerCase());
               });
@@ -67,22 +67,22 @@ module.exports = (program) => {
             if (answer === "y") {
               result = await attemptCopy(true);
             } else {
-              console.log("已取消複製");
+              console.log("Copy cancelled");
               return;
             }
           }
         }
 
         if (result && result.status === "success") {
-          console.log(`複製完成: ${dst}`);
+          console.log(`Copy complete: ${dst}`);
         } else {
           console.error(
-            `錯誤: ${result.data ? result.data.message : "Unknown error"}`,
+            `Error: ${result.data ? result.data.message : "Unknown error"}`,
           );
           process.exit(1);
         }
       } catch (err) {
-        console.error("Error:", err.message);
+        console.error(`Error: ${err.message}`);
         process.exit(1);
       }
     });

@@ -16,7 +16,7 @@ module.exports = (program) => {
         const username = configManager.get("username");
         if (!username) {
           console.error(
-            "Please login first using: ssp login -u <user> -p <pass>",
+            "Error: Please login first using: ssp login -u <user> -p <pass>",
           );
           process.exit(1);
         }
@@ -44,37 +44,37 @@ module.exports = (program) => {
             output: process.stdout,
           });
 
-          rl.question(`確認刪除 ${remotePath}? [y/N] `, async (answer) => {
+          rl.question(`Delete ${remotePath}? [y/N] `, async (answer) => {
             rl.close();
             if (answer.trim().toLowerCase() === "y") {
-              console.log(`刪除中...`);
+              console.log(`Deleting...`);
               const result = await api.deleteFile(dir, filename);
               if (result && result.status === "success") {
-                console.log(`刪除完成: ${remotePath}`);
+                console.log(`Delete complete: ${remotePath}`);
               } else {
                 console.error(
-                  `錯誤: 刪除失敗 - ${result.data ? result.data.message : "Unknown error"}`,
+                  `Error: Delete failed - ${result.data ? result.data.message : "Unknown error"}`,
                 );
                 process.exit(1);
               }
             } else {
-              console.log("已取消刪除");
+              console.log("Deletion cancelled");
             }
           });
         } else {
-          console.log(`刪除中...`);
+          console.log(`Deleting...`);
           const result = await api.deleteFile(dir, filename);
           if (result && result.status === "success") {
-            console.log(`刪除完成: ${remotePath}`);
+            console.log(`Delete complete: ${remotePath}`);
           } else {
             console.error(
-              `錯誤: 刪除失敗 - ${result.data ? result.data.message : "Unknown error"}`,
+              `Error: Delete failed - ${result.data ? result.data.message : "Unknown error"}`,
             );
             process.exit(1);
           }
         }
       } catch (err) {
-        console.error("Error:", err.message);
+        console.error(`Error: ${err.message}`);
         process.exit(1);
       }
     });

@@ -22,7 +22,7 @@ module.exports = (program) => {
         const username = configManager.get("username");
         if (!username) {
           console.error(
-            "Please login first using: ssp login -u <user> -p <pass>",
+            "Error: Please login first using: ssp login -u <user> -p <pass>",
           );
           process.exit(1);
         }
@@ -37,7 +37,7 @@ module.exports = (program) => {
         // Validate type option
         const validTypes = ['file', 'dir', 'all'];
         if (!validTypes.includes(options.type)) {
-          console.error(`錯誤: 無效的類型 "${options.type}"，可用選項: ${validTypes.join(', ')}`);
+          console.error(`Error: Invalid type "${options.type}", available options: ${validTypes.join(', ')}`);
           process.exit(1);
         }
 
@@ -59,7 +59,7 @@ module.exports = (program) => {
             const table = createTable(options);
 
             if (result.data.files.length === 0) {
-              console.log("無符合結果");
+              console.log("No matching results");
             } else {
               result.data.files.forEach((file) => {
                 const isDir = file.type === "dir" || file.type === "folder";
@@ -87,14 +87,14 @@ module.exports = (program) => {
         } else if (result.status === 'success' && result.data && result.data.files && result.data.files.length === 0) {
           // Empty results but success
           if (!options.json) {
-            console.log("無符合結果");
+            console.log("No matching results");
           }
         } else {
-          console.error(`錯誤: ${result.data ? result.data.message : "Unknown error"}`);
+          console.error(`Error: ${result.data ? result.data.message : "Unknown error"}`);
           process.exit(1);
         }
       } catch (err) {
-        console.error("錯誤:", err.message);
+        console.error(`Error: ${err.message}`);
         process.exit(1);
       }
     });

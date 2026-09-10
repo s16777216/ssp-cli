@@ -1,8 +1,4 @@
-## Purpose
-
-The `file-move` capability enables users to move or rename files and folders on the remote Mailcloud server using the WebDAV MOVE protocol. It supports single-file/folder moves, exact target path semantics, interactive overwrite confirmation, and automatic overwrite with a flag. Cross-storage moves are explicitly not supported.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: User can move/rename a file or folder on remote server
 
@@ -55,5 +51,5 @@ The system SHALL allow users to move or rename a file or folder on Mailcloud ser
 
 #### Scenario: User cancels overwrite in interactive mode
 
-- **WHEN** target exists and user enters `n` at `目標已存在，覆蓋？ [y/N]` prompt
+- **WHEN** target exists and user enters `n` at `Destination already exists, overwrite? [y/N]` prompt
 - **THEN** system displays `Move cancelled` and exits with code 0

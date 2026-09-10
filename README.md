@@ -61,7 +61,7 @@ ssp upload ./local.pdf /Docs/             # 上傳到目錄
 ssp upload ./file.txt /remote.txt         # 重命名上傳
 ```
 
-進度顯示：`上傳中... 65% (3.2 MB / 5.0 MB) @ 256 KB/s`
+進度顯示：`Uploading... 65% (3.2 MB / 5.0 MB) @ 256 KB/s`
 
 ## download 下載檔案
 
