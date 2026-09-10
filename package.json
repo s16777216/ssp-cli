@@ -30,11 +30,7 @@
     "url": "https://github.com/s16777216/ssp-cli/issues"
   },
   "homepage": "https://github.com/s16777216/ssp-cli#readme",
-  "files": [
-    "src/",
-    "README.md",
-    "LICENSE"
-  ],
+  "files": ["src/", "README.md", "LICENSE"],
   "engines": {
     "node": ">=18.0.0"
   },
@@ -48,5 +44,9 @@
   },
   "devDependencies": {
     "semantic-release": "^25.0.9"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   }
 }
