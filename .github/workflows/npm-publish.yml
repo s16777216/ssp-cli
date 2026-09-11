@@ -11,8 +11,21 @@ permissions:
   id-token: write
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - run: npm ci
+      - run: npm test
+
   release:
     runs-on: ubuntu-latest
+    needs: test
     environment: Publish
     steps:
       - uses: actions/checkout@v4
@@ -26,7 +39,6 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - run: npm ci
-      - run: npm test
 
       - name: Release
         run: npx semantic-release
@@ -34,6 +46,3 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          # 暫時停用 provenance：首次發布時 OIDC 404 (package not found)。
-          # 首次發布成功後可移除此環境變數以啟用 provenance。
-          npm_config_provenance: 'false'
